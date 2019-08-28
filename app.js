@@ -1,50 +1,76 @@
-'use strict';
-
-// load modules
+const createError = require('http-errors');
 const express = require('express');
-const morgan = require('morgan');
+const path = require('path');
+// const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 
-// variable to enable global error logging
-const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const coursesRouter = require('./routes/courses');
 
-// create the Express app
+
 const app = express();
 
-// setup morgan which gives us http request logging
-app.use(morgan('dev'));
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine', 'pug');
 
-// TODO setup your api routes here
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+// app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// setup a friendly greeting for the root route
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to the REST API project!',
-  });
+app.use('/', indexRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/courses', coursesRouter);
+
+
+// we declare the sequelize and models constiables and initialize them to the sequelize and models objects imported.
+const models = require('./models');
+const sequelize = models.sequelize;
+const { User, Course } = models;
+
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  next(createError(404));
 });
 
-// send 404 if no other route matched
-app.use((req, res) => {
-  res.status(404).json({
-    message: 'Route Not Found',
-  });
+// error handler
+app.use(function(err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.json(err);
 });
 
-// setup a global error handler
-app.use((err, req, res, next) => {
-  if (enableGlobalErrorLogging) {
-    console.error(`Global error handler: ${JSON.stringify(err.stack)}`);
-  }
+module.exports = app;
 
-  res.status(err.status || 500).json({
-    message: err.message,
-    error: {},
-  });
-});
+// // To start, call the Sequelize authenticate() method to test the connection to the database
+// //This causes the model's associated tables in the database to be dropped (i.e. deleted) and created every time the application is started, which makes it easy to make a change, run the app, and test the change.
+// console.log('Testing the connection to the database...');
 
-// set our port
-app.set('port', process.env.PORT || 5000);
+// (async () => {
+//   try {
+//     // Test the connection to the database
+//     console.log('Connection to the database successful!');
+//     await sequelize.authenticate();
 
-// start listening on our port
-const server = app.listen(app.get('port'), () => {
-  console.log(`Express server is listening on port ${server.address().port}`);
-});
+//     // Sync the models
+//     console.log('Synchronizing the models with the database...');
+//     //force: true completely drops a table and re-creates it afterwards each time you start your app (it's a destructive operation). 
+//     await sequelize.sync({ force: true });
+//   } catch(error) {
+    
+//   }
+// })();
+
+
+// //retrieves a list of user accounts and returns it as JSON
+// router.get('/', (req, res) => {
+//   res.json(users);
+// });
