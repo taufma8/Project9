@@ -4,7 +4,7 @@ const database = require('../seed/database.js');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.json({ message: 'Welcome to the REST API project!' });
+  res.json({ message: 'Welcome to Maliha\'s REST API project!' });
 });
 
 module.exports = router;

@@ -1,40 +1,38 @@
 const express = require('express');
 const router = express.Router();
+const {User} = require('../models'); 
 
-function asyncHandler(cb){
-  return async (req,res, next) => {
-      try {
-          await cb(req, res, next);
-      } catch(err) {
-          next(err);
-      }
-  }
-}
-// /* GET users listing. */
-// router.get('/', function(req, res, next) {
-//   res.send('respond with a resource');
-// });
 
 // Send a GET request to /users to READ a list of users
-router.get('/', asyncHandler(async (req, res, next)=>{
-  const users = await Database.getUsers();
-  res.status(200).json(users);
-}));
-
+router.get('/', (req, res, next)=>{
+  User.findAll().then(users => {
+    if (users) {
+      res.status(200).json(users);
+    } else {
+      res.status(404).json({message: "Sorry, couldn't find this page. Try again."});
+    }
+  }).catch(err => res.json({message: err.message}));
+});
 
 //Send a POST request to /users to  CREATE a new user 
-router.post('/', asyncHandler( async (req, res, next)=>{
-  if(req.body.title && req.body.description){
-      const user = await Database.createUser({
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          emailAddress: req.body.emailAddress,
-          password: req.body.password
-      });
-      res.status(201).json(user);
-  } else {
-      res.status(400).json({message: "All fields are required."});
+router.post('/', async (req, res, next)=>{
+  const user = new User ({
+    "firstName": req.body.firstName,
+    "lastName": req.body.lastName,
+    "emailAddress": req.body.emailAddress,
+    "password": req.body.password
+    })
+  try {
+    await user.save();
+    res.location(`/${user.id}`);
+    res.status(201).end();
+  } catch (err) {
+    if(err.name === 'SequelizeValidationError') {
+      res.status(404).json({message: "Hmm...Something's not right. Please fill out all the required fields."})
+    } else {
+      res.json({message: err.message});
+    }
   }
-}));
+}); 
 
 module.exports = router;
