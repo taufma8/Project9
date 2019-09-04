@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {Course} = require('../models'); 
+const authenticateUser = require('./authentication');
+
 
 // Send a GET request to /courses to READ a list of courses
 router.get('/', (req, res, next)=>{
@@ -27,7 +29,7 @@ router.get('/:id', (req, res, next)=>{
 
 
 //Send a POST request to /courses to  CREATE a new course 
-router.post('/', async (req, res, next)=>{
+router.post('/', authenticateUser, async (req, res, next)=>{
   const course = new Course ({
     userId: req.body.userId,
     title: req.body.title,
@@ -35,7 +37,7 @@ router.post('/', async (req, res, next)=>{
     })
   try {
     await course.save();
-    res.location(`/${course.id}`);
+    res.location(`http://localhost:5000/api/courses/${course.id}`);
     res.status(201).end();
   } catch (err) {
     if(err.name === 'SequelizeValidationError') {
@@ -47,7 +49,7 @@ router.post('/', async (req, res, next)=>{
 }); 
 
 // Send a PUT request to /courses/:id to UPDATE (edit) a course
-router.put('/:id',(req, res, next) => {
+router.put('/:id', authenticateUser, (req, res, next) => {
   Course.findByPk(req.params.id)
   .then((course) => {
     if (course) {
@@ -65,8 +67,9 @@ router.put('/:id',(req, res, next) => {
 });
 
 // Send a DELETE request to /courses/:id DELETE a course 
-router.delete("/:id", (req, res, next) => {
+router.delete("/:id", authenticateUser, (req, res, next) => {
   Course.findByPk(req.params.id).then((course) => {
+    // throw new Error("This is on purpose");
     if (course) {
       course.destroy().then(() => res.status(204).end());
     } else {

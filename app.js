@@ -65,7 +65,7 @@ module.exports = app;
 //     //force: true completely drops a table and re-creates it afterwards each time you start your app (it's a destructive operation). 
 //     await sequelize.sync({ force: true });
 //   } catch(error) {
-    
+//     console.log('Connection to the database was unsuccessful!');
 //   }
 // })();
 
