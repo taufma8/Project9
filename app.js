@@ -37,7 +37,7 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// error handler
+// global error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
@@ -47,12 +47,6 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.json(err);
 });
-
-module.exports = app;
-
-// // To start, call the Sequelize authenticate() method to test the connection to the database
-// //This causes the model's associated tables in the database to be dropped (i.e. deleted) and created every time the application is started, which makes it easy to make a change, run the app, and test the change.
-// console.log('Testing the connection to the database...');
 
 // (async () => {
 //   try {
@@ -69,8 +63,4 @@ module.exports = app;
 //   }
 // })();
 
-
-// //retrieves a list of user accounts and returns it as JSON
-// router.get('/', (req, res) => {
-//   res.json(users);
-// });
+module.exports = app;

@@ -10,13 +10,6 @@ const { check, validationResult } = require('express-validator');
 router.get('/', authenticateUser, (req, res, next) => {
   res.status(200).json(req.currentUser);
 });
-  // User.findAll().then(users => {
-  //   if (users) {
-  //     res.status(200).json(users);
-  //   } else {
-  //     res.status(404).json({message: "Sorry, couldn't find this page. Try again."});
-  //   }
-  // }).catch(err => res.json({message: err.message}));
 
 //Send a POST request to /users to  CREATE a new user 
 router.post('/', [
@@ -44,9 +37,12 @@ router.post('/', [
   if (!errors.isEmpty()) {
     // Use the Array `map()` method to get a list of error messages.
     const errorMessages = errors.array().map(error => error.msg);
-
+    
     // Return the validation errors to the client.
-    res.status(400).json({ errors: errorMessages });
+    const err = new Error(errorMessages);
+    err.status = 400;
+    next(err);   
+  
   } else {
 
     const user = new User ({
@@ -63,9 +59,10 @@ router.post('/', [
       res.status(201).end();
     } catch (err) {
       if(err.name === 'SequelizeValidationError') {
-        res.status(400).json({message: "Hmm...Something's not right. Please fill out all the required fields."})
+        res.status(400).json({message: "Hmm...Something's not right. Please fill out all the required fields."});
+        next();
       } else {
-        res.status(400).json({message: err.message});
+        res.status(400).json({message: 'Sorry that email address already exists. Try again.'});
       }
     }
   }
