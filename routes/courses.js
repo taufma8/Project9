@@ -4,6 +4,7 @@ const { Course, User } = require('../models');
 const authenticateUser = require('./authentication');
 const { check, validationResult } = require('express-validator');
 
+// Filter out the following in the Courses endpoint GET routes.
 const filterOut = {
   include: [{
     model: User,
@@ -11,7 +12,7 @@ const filterOut = {
   }],
   attributes: {exclude: ['createdAt', 'updatedAt']}
 }
-// Send a GET request to /courses to READ a list of courses
+// Send a GET request to /courses to READ a list of courses (including the user that owns each course)
 router.get('/', (req, res, next)=>{
   Course.findAll(filterOut)
   .then(courses => {
@@ -23,7 +24,7 @@ router.get('/', (req, res, next)=>{
   }).catch(err => res.json({message: err.message}));
 });
 
-// Send a GET request to /courses/:id to READ(view) a course
+// Send a GET request to /courses/:id to READ(view) a course (including the user that owns the course) for the provided course ID
 router.get('/:id', (req, res, next)=>{
   Course.findByPk(req.params.id, filterOut)
   .then(course => {
@@ -36,8 +37,9 @@ router.get('/:id', (req, res, next)=>{
 });
 
 
-//Send a POST request to /courses to  CREATE a new course 
+//Send a POST request to /courses to CREATE a new course, sets the Location header to the URI for the course, and returns no content
 router.post('/', [
+  // Validations
   check('title')
     .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "title"'),
@@ -60,7 +62,7 @@ router.post('/', [
     err.status = 400;
     next(err);
   } else {
-    // const userId = req.currentUser.id;
+
     const course = new Course ({
       userId: req.body.userId,
       title: req.body.title,
@@ -80,8 +82,9 @@ router.post('/', [
   }
 }); 
 
-// Send a PUT request to /courses/:id to UPDATE (edit) a course
+// Send a PUT request to /courses/:id to UPDATE (edit) a course and returns no content
 router.put('/:id', [
+  // Validations
   check('title')
     .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "title"'),
@@ -128,7 +131,7 @@ router.put('/:id', [
   }
 });
 
-// Send a DELETE request to /courses/:id DELETE a course 
+// Send a DELETE request to /courses/:id DELETE a course and returns no content
 router.delete("/:id", authenticateUser, (req, res, next) => {
   const user = req.currentUser;
   Course.findByPk(req.params.id).then((course) => {

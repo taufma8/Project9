@@ -3,16 +3,21 @@ const router = express.Router();
 const { User } = require('../models'); 
 const bcryptjs = require('bcryptjs');
 const authenticateUser = require('./authentication');
-
 const { check, validationResult } = require('express-validator');
 
-// Send a GET request to /users to READ a list of users
+// Send a GET request to /users to return the currently authenticated user
 router.get('/', authenticateUser, (req, res, next) => {
-  res.status(200).json(req.currentUser);
+    return res.status(200).json({    
+    userId: req.currentUser.get("id"),
+    firstName: req.currentUser.get("firstName"),
+    lastName: req.currentUser.get("lastName"),
+    emailAddress: req.currentUser.get("emailAddress")
+  });
 });
 
-//Send a POST request to /users to  CREATE a new user 
+// Send a POST request to /users to  CREATE a new user, sets the Location header to "/", and returns no content 
 router.post('/', [
+  // Validations
   check('firstName')
     .exists({ checkNull: true, checkFalsy: true })
     .withMessage('Please provide a value for "first name"'),
@@ -54,7 +59,7 @@ router.post('/', [
   
     try {
       await user.save();
-      res.location(`/${user.id}`);
+      res.location('/');
     // Set the status to 201 Created and end the response.
       res.status(201).end();
     } catch (err) {
@@ -66,7 +71,6 @@ router.post('/', [
       }
     }
   }
-
   
 });
 module.exports = router;

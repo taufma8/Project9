@@ -48,19 +48,4 @@ app.use(function(err, req, res, next) {
   res.json(err);
 });
 
-// (async () => {
-//   try {
-//     // Test the connection to the database
-//     console.log('Connection to the database successful!');
-//     await sequelize.authenticate();
-
-//     // Sync the models
-//     console.log('Synchronizing the models with the database...');
-//     //force: true completely drops a table and re-creates it afterwards each time you start your app (it's a destructive operation). 
-//     await sequelize.sync({ force: true });
-//   } catch(error) {
-//     console.log('Connection to the database was unsuccessful!');
-//   }
-// })();
-
 module.exports = app;
